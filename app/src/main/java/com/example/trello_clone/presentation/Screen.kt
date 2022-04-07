@@ -1,0 +1,9 @@
+package com.example.trello_clone.presentation
+
+sealed class Screen(val route: String) {
+    object HomeScreen: Screen("home_screen")
+    object ProfileScreen: Screen("profile_screen")
+    object SplashScreen: Screen("splash_screen")
+    object RegistrationScreen: Screen("registration_screen")
+    object LoginScreen: Screen("login_screen")
+}
