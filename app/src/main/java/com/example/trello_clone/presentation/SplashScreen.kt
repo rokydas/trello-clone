@@ -12,15 +12,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.trello_clone.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(navController: NavController, auth: FirebaseAuth) {
 
     LaunchedEffect(key1 = true) {
         delay(1000)
         navController.popBackStack()
-        navController.navigate(Screen.IntroScreen.route)
+
+        val currentUser: FirebaseUser? = auth.currentUser
+
+        if(currentUser == null) {
+            navController.navigate(Screen.IntroScreen.route)
+        } else {
+            navController.navigate(Screen.ProfileScreen.route)
+        }
     }
 
     Box(

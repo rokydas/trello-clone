@@ -23,13 +23,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val auth: FirebaseAuth = FirebaseAuth.getInstance()
-        val currentUser: FirebaseUser? = auth.currentUser
-
-        if(currentUser == null) {
-            // todo show intro screen
-        } else {
-            // todo show home screen
-        }
 
         setContent {
             Trello_cloneTheme {
@@ -42,13 +35,13 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.SplashScreen.route,
                     ) {
                         composable(route = Screen.HomeScreen.route) {
-                            HomeScreen(navController = navController)
+                            HomeScreen(navController = navController, auth)
                         }
                         composable(route = Screen.ProfileScreen.route) {
-                            ProfileScreen(navController = navController)
+                            ProfileScreen(navController = navController, auth)
                         }
                         composable(route = Screen.SplashScreen.route) {
-                            SplashScreen(navController = navController)
+                            SplashScreen(navController = navController, auth)
                         }
                         composable(route = Screen.IntroScreen.route) {
                             IntroScreen(navController = navController)
@@ -57,7 +50,7 @@ class MainActivity : ComponentActivity() {
                             RegistrationScreen(navController = navController, auth)
                         }
                         composable(route = Screen.LoginScreen.route) {
-                            LoginScreen(navController = navController)
+                            LoginScreen(navController = navController, auth)
                         }
                     }
                 }

@@ -1,6 +1,5 @@
 package com.example.trello_clone.presentation
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,11 +27,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.trello_clone.ui.theme.PrimaryColor
 import com.example.trello_clone.ui.theme.SecondaryColor
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 
 inline fun Modifier.noRippleClickable(crossinline onClick: ()->Unit): Modifier = composed {
@@ -46,6 +46,23 @@ inline fun Modifier.noRippleClickable(crossinline onClick: ()->Unit): Modifier =
 fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
 
     val context = LocalContext.current
+    var isLoading by rememberSaveable { mutableStateOf(false) }
+
+    if(isLoading) {
+        Dialog(
+            onDismissRequest = {  },
+            DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        ) {
+            Box(
+                contentAlignment= Alignment.Center,
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.Transparent, shape = RoundedCornerShape(8.dp))
+            ) {
+                CircularProgressIndicator(color = PrimaryColor)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -170,13 +187,13 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
                 Box(
                     modifier = Modifier
                         .noRippleClickable() {
-
-                            if(name == "" || email == "" || password == "") {
-                                Toast.makeText(context, "Fill up all fields", Toast.LENGTH_SHORT).show()
+                            if (name == "" || email == "" || password == "") {
+                                Toast
+                                    .makeText(context, "Fill up all fields", Toast.LENGTH_SHORT)
+                                    .show()
                             } else {
-                                auth.createUserWithEmailAndPassword(
-                                    email.trim(), password.trim()
-                                )
+                                isLoading = true
+                                auth.createUserWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener() { task ->
                                         if (task.isSuccessful) {
                                             val user = task.result.user
@@ -184,15 +201,20 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
                                             val profileUpdates = userProfileChangeRequest {
                                                 displayName = name
                                             }
-                                            user!!.updateProfile(profileUpdates)
+                                            user!!
+                                                .updateProfile(profileUpdates)
                                                 .addOnCompleteListener { updateNameTask ->
+                                                    isLoading = false
                                                     if (updateNameTask.isSuccessful) {
-                                                        navController.navigate(Screen.ProfileScreen.route)
+                                                        navController.navigate(Screen.ProfileScreen.route) {
+                                                            popUpTo(0)
+                                                        }
                                                     } else {
-                                                        Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_LONG).show()
                                                     }
                                                 }
                                         } else {
+                                            isLoading = false
                                             Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_SHORT).show()
                                         }
                                     }
@@ -216,5 +238,4 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
         }
     }
 }
-
 
