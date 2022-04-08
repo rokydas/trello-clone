@@ -1,5 +1,7 @@
 package com.example.trello_clone.presentation
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,6 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -17,13 +21,19 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.trello_clone.ui.theme.PrimaryColor
 import com.example.trello_clone.ui.theme.SecondaryColor
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.ktx.userProfileChangeRequest
 
 inline fun Modifier.noRippleClickable(crossinline onClick: ()->Unit): Modifier = composed {
     clickable(indication = null,
@@ -33,7 +43,10 @@ inline fun Modifier.noRippleClickable(crossinline onClick: ()->Unit): Modifier =
 }
 
 @Composable
-fun RegistrationScreen(navController: NavController) {
+fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
+
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,6 +101,7 @@ fun RegistrationScreen(navController: NavController) {
             var name by rememberSaveable { mutableStateOf("") }
             var email by rememberSaveable { mutableStateOf("") }
             var password by rememberSaveable { mutableStateOf("") }
+            var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
             Column {
                 TextField(
@@ -135,7 +149,18 @@ fun RegistrationScreen(navController: NavController) {
                         cursorColor = Color.Gray,
                         focusedIndicatorColor = Color.Gray
                     ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            Icons.Filled.Visibility
+                        else Icons.Filled.VisibilityOff
+                        val description = if (passwordVisible) "Hide password" else "Show password"
+
+                        IconButton(onClick = {passwordVisible = !passwordVisible}){
+                            Icon(imageVector  = image, description)
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -145,7 +170,35 @@ fun RegistrationScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .noRippleClickable() {
-                            // sign up
+
+                            if(name == "" || email == "" || password == "") {
+                                Toast.makeText(context, "Fill up all fields", Toast.LENGTH_SHORT).show()
+                            } else {
+                                auth.createUserWithEmailAndPassword(
+                                    email.trim(), password.trim()
+                                )
+                                    .addOnCompleteListener() { task ->
+                                        if (task.isSuccessful) {
+                                            val user = task.result.user
+
+                                            val profileUpdates = userProfileChangeRequest {
+                                                displayName = name
+                                            }
+                                            user!!.updateProfile(profileUpdates)
+                                                .addOnCompleteListener { updateNameTask ->
+                                                    if (updateNameTask.isSuccessful) {
+                                                        navController.navigate(Screen.ProfileScreen.route)
+                                                    } else {
+                                                        Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                        } else {
+                                            Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                            }
+
+
                         }
                         .fillMaxWidth()
                         .padding(8.dp)
@@ -161,7 +214,6 @@ fun RegistrationScreen(navController: NavController) {
                 }
             }
         }
-
     }
 }
 
