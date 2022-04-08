@@ -1,19 +1,18 @@
 package com.example.trello_clone.presentation
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.trello_clone.R
@@ -58,7 +57,11 @@ fun IntroScreen(navController: NavController) {
             modifier = modifier,
             gradient = signInGradient,
             text = "SIGN IN",
-            textColor = Color.White
+            textColor = Color.White,
+            borderColor = Color.Transparent,
+            onClick = {
+                navController.navigate(Screen.LoginScreen.route)
+            }
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -67,7 +70,11 @@ fun IntroScreen(navController: NavController) {
             modifier = modifier,
             gradient = signUPGradient,
             text = "SIGN UP",
-            textColor = PrimaryColor
+            textColor = PrimaryColor,
+            borderColor = PrimaryColor,
+            onClick = {
+                navController.navigate(Screen.RegistrationScreen.route)
+            }
         )
     }
 }
@@ -77,27 +84,24 @@ fun AuthButton(
     modifier: Modifier,
     gradient: Brush,
     text: String,
-    textColor: Color
+    textColor: Color,
+    borderColor: Color,
+    onClick: () -> Unit
 ) {
-    Button(
-        modifier = modifier,
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-        contentPadding = PaddingValues(),
-        onClick = {
-            // go to login screen
-        },
+    Box(
+        modifier = modifier
+            .background(gradient)
+            .border(BorderStroke(2.dp, borderColor))
+            .clickable {
+                onClick()
+            }
+            .then(modifier),
+        contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .background(gradient)
-                .then(modifier),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = text,
-                color = textColor,
-                style = MaterialTheme.typography.h5
-            )
-        }
+        Text(
+            text = text,
+            color = textColor,
+            style = MaterialTheme.typography.h6
+        )
     }
 }

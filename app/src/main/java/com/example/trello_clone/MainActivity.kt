@@ -33,8 +33,14 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.SplashScreen.route) {
                             SplashScreen(navController = navController)
                         }
-                        composable(route = Screen.RegistrationScreen.route) {
+                        composable(route = Screen.IntroScreen.route) {
                             IntroScreen(navController = navController)
+                        }
+                        composable(route = Screen.RegistrationScreen.route) {
+                            RegistrationScreen(navController = navController)
+                        }
+                        composable(route = Screen.LoginScreen.route) {
+                            LoginScreen(navController = navController)
                         }
                     }
                 }
