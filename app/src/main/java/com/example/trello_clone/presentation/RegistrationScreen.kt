@@ -188,9 +188,7 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
                     modifier = Modifier
                         .noRippleClickable() {
                             if (name == "" || email == "" || password == "") {
-                                Toast
-                                    .makeText(context, "Fill up all fields", Toast.LENGTH_SHORT)
-                                    .show()
+                                Toast.makeText(context, "Fill up all fields", Toast.LENGTH_SHORT).show()
                             } else {
                                 isLoading = true
                                 auth.createUserWithEmailAndPassword(email.trim(), password.trim())
@@ -204,12 +202,12 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
                                             user!!
                                                 .updateProfile(profileUpdates)
                                                 .addOnCompleteListener { updateNameTask ->
-                                                    isLoading = false
                                                     if (updateNameTask.isSuccessful) {
                                                         navController.navigate(Screen.ProfileScreen.route) {
                                                             popUpTo(0)
                                                         }
                                                     } else {
+                                                        isLoading = false
                                                         Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_LONG).show()
                                                     }
                                                 }
