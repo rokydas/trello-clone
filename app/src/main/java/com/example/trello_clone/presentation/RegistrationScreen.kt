@@ -1,5 +1,6 @@
 package com.example.trello_clone.presentation
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,10 +31,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.example.trello_clone.model.User
 import com.example.trello_clone.ui.theme.PrimaryColor
 import com.example.trello_clone.ui.theme.SecondaryColor
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 inline fun Modifier.noRippleClickable(crossinline onClick: ()->Unit): Modifier = composed {
     clickable(indication = null,
@@ -188,32 +191,44 @@ fun RegistrationScreen(navController: NavController, auth: FirebaseAuth) {
                     modifier = Modifier
                         .noRippleClickable() {
                             if (name == "" || email == "" || password == "") {
-                                Toast.makeText(context, "Fill up all fields", Toast.LENGTH_SHORT).show()
+                                Toast
+                                    .makeText(context, "Fill up all fields", Toast.LENGTH_SHORT)
+                                    .show()
                             } else {
                                 isLoading = true
-                                auth.createUserWithEmailAndPassword(email.trim(), password.trim())
+                                auth
+                                    .createUserWithEmailAndPassword(email.trim(), password.trim())
                                     .addOnCompleteListener() { task ->
                                         if (task.isSuccessful) {
-                                            val user = task.result.user
+                                            val authUser = task.result.user
+                                            val db = Firebase.firestore
 
-                                            val profileUpdates = userProfileChangeRequest {
-                                                displayName = name
-                                            }
-                                            user!!
-                                                .updateProfile(profileUpdates)
-                                                .addOnCompleteListener { updateNameTask ->
-                                                    if (updateNameTask.isSuccessful) {
-                                                        navController.navigate(Screen.ProfileScreen.route) {
-                                                            popUpTo(0)
-                                                        }
-                                                    } else {
-                                                        isLoading = false
-                                                        Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_LONG).show()
+                                            val user = User(
+                                                name = name,
+                                                email = email,
+                                            )
+
+                                            db.collection("users")
+                                                .document(authUser!!.uid)
+                                                .set(user)
+                                                .addOnSuccessListener {
+                                                    navController.navigate(Screen.ProfileScreen.route) {
+                                                        popUpTo(0)
                                                     }
                                                 }
+                                                .addOnFailureListener {
+                                                    Toast.makeText(context, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show()
+                                                }
+
                                         } else {
                                             isLoading = false
-                                            Toast.makeText(context, task.exception?.message!!, Toast.LENGTH_SHORT).show()
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    task.exception?.message!!,
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
                                         }
                                     }
                             }
