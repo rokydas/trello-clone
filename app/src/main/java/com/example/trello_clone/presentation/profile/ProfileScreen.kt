@@ -1,54 +1,51 @@
 package com.example.trello_clone.presentation
 
-import android.content.Context
-import android.util.Log
-import android.widget.Toast
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import com.example.trello_clone.R
 import com.example.trello_clone.model.User
+import com.example.trello_clone.presentation.profile.ProfileViewModel
 import com.example.trello_clone.ui.theme.PrimaryColor
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
-import com.example.trello_clone.presentation.profile.ProfileViewModel
 
 @Composable
 fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
 
     val userId = auth.uid
-    val context = LocalContext.current
     val viewModel = ProfileViewModel()
 
     var isLoading by rememberSaveable { mutableStateOf(true) }
+    var _user by rememberSaveable { mutableStateOf<User>(User()) }
 
     val user = viewModel.user.observeAsState()
     if(user.value != null) {
         isLoading = false
+        _user = user.value!!
     }
 
     if(userId != null) {
@@ -116,12 +113,12 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
 
                 Column {
                     Text(
-                        text = user.value!!.name,
+                        text = _user.name,
                         style = MaterialTheme.typography.h5,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Fashion Model",
+                        text = _user.designation,
                         style = MaterialTheme.typography.body1
                     )
                 }
@@ -137,7 +134,7 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                 )
                 Spacer(modifier = Modifier.width(30.dp))
                 Text(
-                    text = "+88055656563",
+                    text = _user.mobileNumber,
                     style = MaterialTheme.typography.body1
                 )
             }
@@ -152,7 +149,7 @@ fun ProfileScreen(navController: NavController, auth: FirebaseAuth) {
                 )
                 Spacer(modifier = Modifier.width(30.dp))
                 Text(
-                    text = user.value!!.email,
+                    text = _user.email,
                     style = MaterialTheme.typography.body1
                 )
             }
